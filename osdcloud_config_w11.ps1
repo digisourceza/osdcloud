@@ -37,6 +37,22 @@ Start-Sleep -Seconds 5
 
 Start-OSDCloud -OSVersion 'Windows 11' -OSBuild 26H2 -OSEdition Pro -OSLanguage en-us -OSLicense Retail -ZTI
 
+#=================================================
+# Re-detect the USB (OSDCloud removes and restores USB drive letters)
+#=================================================
+try { Get-Partition | Where-Object { -not $_.DriveLetter -and $_.Size -gt 1GB -and (Get-Disk -Number $_.DiskNumber).BusType -eq 'USB' } | Add-PartitionAccessPath -AssignDriveLetter -ErrorAction SilentlyContinue } catch {}
+
+$newUsb = (Get-Volume | Where-Object { $_.DriveLetter -and $_.FileSystemLabel -eq 'OSDCloudUSB' }).DriveLetter | Select-Object -First 1
+if (-not $newUsb) {
+    $newUsb = (Get-Volume | Where-Object { $_.DriveLetter -and $_.DriveLetter -ne 'X' -and (Test-Path "$($_.DriveLetter):\OSDCloud\Drivers") }).DriveLetter | Select-Object -First 1
+}
+if ($newUsb -and $newUsb -ne $usb) {
+    Write-Host -ForegroundColor Yellow "USB drive letter changed from $usb to $newUsb"
+    if ($UsbLogs) { $UsbLogs = $UsbLogs -replace "^$($usb):", "$($newUsb):" }
+    $usb = $newUsb
+}
+Write-Host -ForegroundColor Cyan "USB OSDCloud partition after deployment: $(if ($usb) { "$($usb):" } else { 'NOT FOUND' })"
+
 # OSDCloud stops our transcript - restart it
 if ($UsbLogs) { try { Start-Transcript -Path "$UsbLogs\Deploy-Transcript.log" -Append | Out-Null } catch {} }
 
