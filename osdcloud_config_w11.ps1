@@ -42,6 +42,6 @@ Copy-Item 'C:\Windows\Panther' -Destination "$UsbLogs\Panther"           -Recurs
 
 Stop-Transcript
 
-Write-Host -ForegroundColor Yellow "TEST MODE - review the output above, then press Enter to reboot"
-Read-Host | Out-Null
+Write-Host -ForegroundColor Green "Restarting in 20 seconds!"
+Start-Sleep -Seconds 20
 wpeutil reboot
