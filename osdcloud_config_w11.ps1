@@ -34,6 +34,18 @@ else {
 }
 
 #=================================================
+# Apply unattend.xml to the installed Windows
+#=================================================
+if ($usb -and (Test-Path "$($usb):\OSDCloud\Config\Unattend\unattend.xml")) {
+    New-Item 'C:\Windows\Panther' -ItemType Directory -Force | Out-Null
+    Copy-Item "$($usb):\OSDCloud\Config\Unattend\unattend.xml" -Destination 'C:\Windows\Panther\unattend.xml' -Force
+    Write-Host -ForegroundColor Green "unattend.xml copied to C:\Windows\Panther"
+}
+else {
+    Write-Warning "No unattend.xml found on USB - OOBE will run with default prompts"
+}
+
+#=================================================
 # Copy OSDCloud and setup logs to the USB
 #=================================================
 Copy-Item 'X:\OSDCloud\Logs'  -Destination "$UsbLogs\WinPE-OSDCloudLogs" -Recurse -Force -ErrorAction SilentlyContinue
