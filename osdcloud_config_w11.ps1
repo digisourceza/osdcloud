@@ -3,12 +3,14 @@ $usb = (Get-Volume | Where-Object { $_.DriveLetter -and (Test-Path "$($_.DriveLe
 $serial = (Get-CimInstance Win32_BIOS).SerialNumber
 $UsbLogs = "$($usb):\DeployLogs\$serial-$(Get-Date -Format yyyyMMdd-HHmm)"
 New-Item $UsbLogs -ItemType Directory -Force | Out-Null
-Start-Transcript -Path "$UsbLogs\Deploy-Transcript.log"
+Start-Transcript -Path "$UsbLogs\Deploy-Transcript.log" -Append
 
 Write-Host -ForegroundColor Green "Starting OSDCloud ZTI"
 Start-Sleep -Seconds 5
 
 Start-OSDCloud -OSVersion 'Windows 11' -OSBuild 26H2 -OSEdition Pro -OSLanguage en-us -OSLicense Retail -ZTI
+
+try { Start-Transcript -Path "$UsbLogs\Deploy-Transcript.log" -Append | Out-Null } catch {}
 
 #=================================================
 # Inject Intel VMD / RST storage driver into the applied OS
@@ -40,6 +42,6 @@ Copy-Item 'C:\Windows\Panther' -Destination "$UsbLogs\Panther"           -Recurs
 
 Stop-Transcript
 
-Write-Host -ForegroundColor Green "Restarting in 20 seconds!"
-Start-Sleep -Seconds 20
+Write-Host -ForegroundColor Yellow "TEST MODE - review the output above, then press Enter to reboot"
+Read-Host | Out-Null
 wpeutil reboot
